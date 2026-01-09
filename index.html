@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Penginputan Data Persediaan Apotek - Terhubung Excel</title>
+    <!-- SheetJS Library untuk membaca file Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        
+        .file-upload-section {
+            background-color: #e8f4fc;
+            padding: 25px 30px;
+            border-bottom: 1px solid #d1e7f5;
+            text-align: center;
+        }
+        
+        .upload-area {
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            padding: 40px 20px;
+            margin: 20px auto;
+            max-width: 600px;
+            background-color: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            background-color: rgba(255, 255, 255, 1);
+            border-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .upload-subtext {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-info {
+            background-color: white;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            text-align: left;
+            border-left: 4px solid #2ecc71;
+            display: none;
+        }
+        
+        .file-info h4 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .file-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .file-detail {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .file-detail-label {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-bottom: 3px;
+        }
+        
+        .file-detail-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #d68910;
+        }
+        
+        .app-info {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            background-color: #e8f4fc;
+            padding: 15px 30px;
+            border-bottom: 1px solid #d1e7f5;
+            display: none;
+        }
+        
+        .info-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px;
+        }
+        
+        .info-box h3 {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        
+        .info-box p {
+            color: #555;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            min-height: 500px;
+            display: none;
+        }
+        
+        .sidebar {
+            flex: 1;
+            min-width: 300px;
+            background-color: #f9f9f9;
+            padding: 25px;
+            border-right: 1px solid #eee;
+        }
+        
+        .main-content {
+            flex: 2;
+            min-width: 400px;
+            padding: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        .stok-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stok-item {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .stok-item label {
+            font-size: 0.9rem;
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            padding-left: 45px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+        }
+        
+        .product-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+        
+        .product-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .product-item:hover {
+            background-color: #f0f7ff;
+        }
+        
+        .product-item.selected {
+            background-color: #e3f2fd;
+            border-left: 4px solid #3498db;
+        }
+        
+        .product-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .product-details {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .status-bar {
+            background-color: #e8f4fc;
+            padding: 15px 30px;
+            border-top: 1px solid #d1e7f5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            display: none;
+        }
+        
+        .status-message {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .item-count {
+            background-color: #3498db;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .preview-table th, .preview-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+        
+        .preview-table th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+        }
+        
+        .preview-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .preview-table tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .app-info, .file-details {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Aplikasi Penginputan Data Persediaan Apotek</h1>
+            <p>Sistem pencatatan stok obat dan produk kesehatan - Terhubung dengan File Excel</p>
+        </header>
+        
+        <div class="file-upload-section">
+            <h2>Upload File Excel Data Persediaan</h2>
+            <p>Upload file Excel dengan format yang sesuai untuk memulai penginputan data</p>
+            
+            <div class="upload-area">
+                <div class="upload-icon">📊</div>
+                <div class="upload-text">Klik tombol di bawah untuk upload file Excel</div>
+                <div class="upload-subtext">Format yang didukung: .xlsx, .xls, .csv</div>
+                <button class="btn btn-primary" id="browse-btn">Pilih File Excel</button>
+                <input type="file" id="excel-file" class="file-input" accept=".xlsx,.xls,.csv">
+                <div style="margin-top: 15px; font-size: 0.9rem; color: #7f8c8d;">
+                    <strong>Format file yang diharapkan:</strong> File harus memiliki kolom: No., Nama Persediaan, HPP, dan kolom stok lainnya
+                </div>
+            </div>
+            
+            <div id="file-info" class="file-info">
+                <h4>File yang diupload:</h4>
+                <div class="file-details">
+                    <div class="file-detail">
+                        <div class="file-detail-label">Nama File</div>
+                        <div class="file-detail-value" id="file-name">-</div>
+                    </div>
+                    <div class="file-detail">
+                        <div class="file-detail-label">Ukuran</div>
+                        <div class="file-detail-value" id="file-size">-</div>
+                    </div>
+                    <div class="file-detail">
+                        <div class="file-detail-label">Jumlah Baris</div>
+                        <div class="file-detail-value" id="file-rows">-</div>
+                    </div>
+                    <div class="file-detail">
+                        <div class="file-detail-label">Status</div>
+                        <div class="file-detail-value" id="file-status">-</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button class="btn btn-warning" id="preview-btn">Preview Data</button>
+                    <button class="btn btn-success" id="load-data-btn">Muat Data ke Aplikasi</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="app-info" id="app-info">
+            <div class="info-box">
+                <h3>Total Produk</h3>
+                <p id="total-products">0 produk</p>
+            </div>
+            <div class="info-box">
+                <h3>Status Input</h3>
+                <p id="input-status">Belum ada data diinput</p>
+            </div>
+            <div class="info-box">
+                <h3>Format File</h3>
+                <p id="file-format">Belum ada file diupload</p>
+            </div>
+        </div>
+        
+        <div class="content" id="main-content">
+            <div class="sidebar">
+                <h2 style="margin-bottom: 20px; color: #2c3e50;">Daftar Produk</h2>
+                
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-product" placeholder="Cari produk...">
+                </div>
+                
+                <div class="product-list" id="product-list">
+                    <div class="no-data">Upload file Excel terlebih dahulu</div>
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <h2 style="margin-bottom: 25px; color: #2c3e50;">Form Input Data Stok</h2>
+                
+                <div class="form-group">
+                    <label for="product-no">No. Produk</label>
+                    <input type="text" id="product-no" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="product-name">Nama Persediaan</label>
+                    <input type="text" id="product-name" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="hpp">Harga Pokok Penjualan (HPP)</label>
+                    <input type="number" id="hpp" placeholder="Masukkan harga...">
+                </div>
+                
+                <h3 style="margin: 25px 0 15px 0; color: #2c3e50;">Data Stok</h3>
+                
+                <div class="stok-grid">
+                    <div class="stok-item">
+                        <label for="stok-box">Stok Box</label>
+                        <input type="number" id="stok-box" min="0">
+                    </div>
+                    
+                    <div class="stok-item">
+                        <label for="rasio-1">Rasio 1</label>
+                        <input type="number" id="rasio-1" min="0">
+                    </div>
+                    
+                    <div class="stok-item">
+                        <label for="stok-strip">Stok Strip</label>
+                        <input type="number" id="stok-strip" min="0">
+                    </div>
+                    
+                    <div class="stok-item">
+                        <label for="rasio-2">Rasio 2</label>
+                        <input type="number" id="rasio-2" min="0">
+                    </div>
+                    
+                    <div class="stok-item">
+                        <label for="stok-tablet">Stok Tablet</label>
+                        <input type="number" id="stok-tablet" min="0">
+                    </div>
+                    
+                    <div class="stok-item">
+                        <label for="rasio-3">Rasio 3</label>
+                        <input type="number" id="rasio-3" min="0">
+                    </div>
+                    
+                    <div class="stok-item">
+                        <label for="stok-botol">Stok Botol</label>
+                        <input type="number" id="stok-botol" min="0">
+                    </div>
+                    
+                    <div class="stok-item">
+                        <label for="rasio-4">Rasio 4</label>
+                        <input type="number" id="rasio-4" min="0">
+                    </div>
+                    
+                    <div class="stok-item">
+                        <label for="stok-tube">Stok Tube</label>
+                        <input type="number" id="stok-tube" min="0">
+                    </div>
+                    
+                    <div class="stok-item">
+                        <label for="rasio-5">Rasio 5</label>
+                        <input type="number" id="rasio-5" min="0">
+                    </div>
+                    
+                    <div class="stok-item">
+                        <label for="stok-pcs">Stok Pcs</label>
+                        <input type="number" id="stok-pcs" min="0">
+                    </div>
+                    
+                    <div class="stok-item">
+                        <label for="rasio-6">Rasio 6</label>
+                        <input type="number" id="rasio-6" min="0">
+                    </div>
+                    
+                    <div class="stok-item">
+                        <label for="stok-pack">Stok Pack</label>
+                        <input type="number" id="stok-pack" min="0">
+                    </div>
+                    
+                    <div class="stok-item">
+                        <label for="rasio-7">Rasio 7</label>
+                        <input type="number" id="rasio-7" min="0">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="expired-date">Expired Date</label>
+                    <input type="date" id="expired-date">
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 30px;">
+                    <button class="btn btn-secondary" id="reset-btn">Reset Form</button>
+                    <button class="btn btn-primary" id="save-btn">Simpan Data</button>
+                    <button class="btn btn-success" id="export-btn">Export Data</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="status-bar" id="status-bar">
+            <div class="status-message" id="status-message">Pilih produk dari daftar untuk mulai menginput data</div>
+            <div class="item-count" id="item-count">0/0</div>
+        </div>
+    </div>
+    
+    <!-- Modal Preview -->
+    <div class="modal" id="preview-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Preview Data dari File Excel</h2>
+                <button class="close-modal" id="close-preview-modal">&times;</button>
+            </div>
+            <p>Berikut adalah preview 10 baris pertama dari file Excel yang diupload:</p>
+            
+            <div id="preview-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Memuat preview data...</p>
+                </div>
+            </div>
+            
+            <div style="text-align: right; margin-top: 25px;">
+                <button class="btn btn-secondary" id="close-preview-btn">Tutup</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Export -->
+    <div class="modal" id="export-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Export Data</h2>
+                <button class="close-modal" id="close-export-modal">&times;</button>
+            </div>
+            <p>Pilih format file untuk mengekspor data yang telah diinput:</p>
+            
+            <div class="export-options">
+                <label class="export-option">
+                    <input type="radio" name="export-format" value="csv" checked>
+                    <div>
+                        <strong>CSV (Comma Separated Values)</strong>
+                        <p>Format teks sederhana yang kompatibel dengan Excel dan aplikasi spreadsheet lainnya.</p>
+                    </div>
+                </label>
+                
+                <label class="export-option">
+                    <input type="radio" name="export-format" value="json">
+                    <div>
+                        <strong>JSON (JavaScript Object Notation)</strong>
+                        <p>Format pertukaran data yang ringan dan mudah dibaca oleh manusia.</p>
+                    </div>
+                </label>
+                
+                <label class="export-option">
+                    <input type="radio" name="export-format" value="excel">
+                    <div>
+                        <strong>Excel (XLSX)</strong>
+                        <p>Format file Excel dengan struktur kolom yang sama dengan file asli.</p>
+                    </div>
+                </label>
+            </div>
+            
+            <div style="text-align: right; margin-top: 25px;">
+                <button class="btn btn-secondary" id="cancel-export">Batal</button>
+                <button class="btn btn-primary" id="confirm-export">Export Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data aplikasi
+        let products = [];
+        let inputData = JSON.parse(localStorage.getItem('apotekInputData')) || [];
+        let selectedProduct = null;
+        let uploadedFileData = null;
+        let columnMapping = {};
+
+        // DOM Elements
+        const browseBtn = document.getElementById('browse-btn');
+        const fileInput = document.getElementById('excel-file');
+        const fileInfo = document.getElementById('file-info');
+        const fileName = document.getElementById('file-name');
+        const fileSize = document.getElementById('file-size');
+        const fileRows = document.getElementById('file-rows');
+        const fileStatus = document.getElementById('file-status');
+        const previewBtn = document.getElementById('preview-btn');
+        const loadDataBtn = document.getElementById('load-data-btn');
+        const appInfo = document.getElementById('app-info');
+        const mainContent = document.getElementById('main-content');
+        const statusBar = document.getElementById('status-bar');
+        const productListElement = document.getElementById('product-list');
+        const searchInput = document.getElementById('search-product');
+        const productNoInput = document.getElementById('product-no');
+        const productNameInput = document.getElementById('product-name');
+        const hppInput = document.getElementById('hpp');
+        const stokBoxInput = document.getElementById('stok-box');
+        const rasio1Input = document.getElementById('rasio-1');
+        const stokStripInput = document.getElementById('stok-strip');
+        const rasio2Input = document.getElementById('rasio-2');
+        const stokTabletInput = document.getElementById('stok-tablet');
+        const rasio3Input = document.getElementById('rasio-3');
+        const stokBotolInput = document.getElementById('stok-botol');
+        const rasio4Input = document.getElementById('rasio-4');
+        const stokTubeInput = document.getElementById('stok-tube');
+        const rasio5Input = document.getElementById('rasio-5');
+        const stokPcsInput = document.getElementById('stok-pcs');
+        const rasio6Input = document.getElementById('rasio-6');
+        const stokPackInput = document.getElementById('stok-pack');
+        const rasio7Input = document.getElementById('rasio-7');
+        const expiredDateInput = document.getElementById('expired-date');
+        const saveButton = document.getElementById('save-btn');
+        const resetButton = document.getElementById('reset-btn');
+        const exportButton = document.getElementById('export-btn');
+        const totalProductsElement = document.getElementById('total-products');
+        const inputStatusElement = document.getElementById('input-status');
+        const fileFormatElement = document.getElementById('file-format');
+        const statusMessageElement = document.getElementById('status-message');
+        const itemCountElement = document.getElementById('item-count');
+        const previewModal = document.getElementById('preview-modal');
+        const closePreviewModal = document.getElementById('close-preview-modal');
+        const closePreviewBtn = document.getElementById('close-preview-btn');
+        const previewContent = document.getElementById('preview-content');
+        const exportModal = document.getElementById('export-modal');
+        const closeExportModal = document.getElementById('close-export-modal');
+        const cancelExportButton = document.getElementById('cancel-export');
+        const confirmExportButton = document.getElementById('confirm-export');
+
+        // Inisialisasi aplikasi
+        function initApp() {
+            console.log('Aplikasi diinisialisasi');
+            
+            // Setup event listeners sederhana
+            setupEventListeners();
+            
+            // Set tanggal default untuk expired date
+            const sixMonthsFromNow = new Date();
+            sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+            expiredDateInput.valueAsDate = sixMonthsFromNow;
+            
+            // Tampilkan info jika ada data sebelumnya
+            if (inputData.length > 0) {
+                fileInfo.style.display = 'block';
+                fileName.textContent = 'Data dari localStorage';
+                fileSize.textContent = 'N/A';
+                fileRows.textContent = inputData.length + ' baris';
+                fileStatus.textContent = 'Data sebelumnya ditemukan';
+                fileStatus.style.color = '#2ecc71';
+                
+                // Auto load data dari localStorage
+                loadDataFromLocalStorage();
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            console.log('Menyiapkan event listeners');
+            
+            // Browse button - cara yang lebih sederhana
+            browseBtn.addEventListener('click', function(e) {
+                console.log('Tombol browse diklik');
+                fileInput.click();
+                e.preventDefault();
+            });
+            
+            // File input change
+            fileInput.addEventListener('change', function(e) {
+                console.log('File dipilih:', this.files);
+                if (this.files.length) {
+                    handleFileUpload(this.files[0]);
+                }
+            });
+            
+            // Preview button
+            previewBtn.addEventListener('click', showPreview);
+            
+            // Load data button
+            loadDataBtn.addEventListener('click', loadExcelData);
+            
+            // Simpan data
+            saveButton.addEventListener('click', saveData);
+            
+            // Reset form
+            resetButton.addEventListener('click', resetForm);
+            
+            // Export button
+            exportButton.addEventListener('click', showExportModal);
+            
+            // Modal close buttons
+            closePreviewModal.addEventListener('click', closePreview);
+            closePreviewBtn.addEventListener('click', closePreview);
+            closeExportModal.addEventListener('click', closeExportModalFunc);
+            cancelExportButton.addEventListener('click', closeExportModalFunc);
+            confirmExportButton.addEventListener('click', exportData);
+            
+            // Pencarian produk
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const filteredProducts = products.filter(product => 
+                    product.name.toLowerCase().includes(searchTerm) || 
+                    product.no.includes(searchTerm)
+                );
+                renderProductList(filteredProducts);
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(e) {
+                if (e.target === previewModal) {
+                    closePreview();
+                }
+                if (e.target === exportModal) {
+                    closeExportModalFunc();
+                }
+            });
+        }
+
+        // Handle file upload
+        function handleFileUpload(file) {
+            console.log('Mengupload file:', file.name);
+            
+            // Validasi file
+            const validExtensions = ['.xlsx', '.xls', '.csv'];
+            const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+            
+            if (!validExtensions.includes(fileExtension)) {
+                alert('Format file tidak didukung. Silakan upload file Excel (.xlsx, .xls) atau CSV.');
+                return;
+            }
+            
+            // Tampilkan info file
+            fileInfo.style.display = 'block';
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileRows.textContent = 'Memproses...';
+            fileStatus.textContent = 'File diupload';
+            fileStatus.style.color = '#3498db';
+            
+            // Baca file Excel
+            readExcelFile(file);
+        }
+
+        // Format ukuran file
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Baca file Excel menggunakan SheetJS
+        function readExcelFile(file) {
+            console.log('Membaca file Excel:', file.name);
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    console.log('File berhasil dibaca');
+                    const data = e.target.result;
+                    const workbook = XLSX.read(data, { type: 'binary' });
+                    
+                    // Ambil sheet pertama
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // Konversi ke JSON
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    // Simpan data file
+                    uploadedFileData = {
+                        name: file.name,
+                        data: jsonData,
+                        sheetName: firstSheetName,
+                        rows: jsonData.length
+                    };
+                    
+                    console.log('Data berhasil diparse:', jsonData.length, 'baris');
+                    
+                    // Update info file
+                    fileRows.textContent = jsonData.length + ' baris';
+                    fileStatus.textContent = 'File berhasil dibaca';
+                    fileStatus.style.color = '#2ecc71';
+                    
+                    // Auto detect column mapping
+                    detectColumnMapping(jsonData);
+                    
+                    // Enable tombol preview dan load data
+                    previewBtn.disabled = false;
+                    loadDataBtn.disabled = false;
+                    
+                } catch (error) {
+                    console.error('Error reading Excel file:', error);
+                    fileStatus.textContent = 'Error membaca file';
+                    fileStatus.style.color = '#e74c3c';
+                    alert('Error membaca file: ' + error.message);
+                }
+            };
+            
+            reader.onerror = function() {
+                console.error('Error membaca file');
+                fileStatus.textContent = 'Error membaca file';
+                fileStatus.style.color = '#e74c3c';
+                alert('Error membaca file. Pastikan file tidak corrupt.');
+            };
+            
+            reader.readAsBinaryString(file);
+        }
+
+        // Deteksi mapping kolom dari data Excel
+        function detectColumnMapping(data) {
+            console.log('Mendeteksi mapping kolom...');
+            
+            if (data.length < 3) {
+                console.warn('Data terlalu sedikit untuk mendeteksi kolom');
+                return;
+            }
+            
+            // Ambil header (baris ke-1 dan ke-3)
+            const headerRow1 = data[0] || [];
+            const headerRow3 = data[2] || [];
+            
+            // Reset mapping
+            columnMapping = {};
+            
+            // Log untuk debugging
+            console.log('Header baris 1:', headerRow1);
+            console.log('Header baris 3:', headerRow3);
+            
+            // Mapping manual berdasarkan indeks (sesuai dengan file yang Anda berikan)
+            columnMapping.no = 0; // Kolom A: No.
+            columnMapping.name = 1; // Kolom B: Nama Persediaan
+            columnMapping.hpp = 2; // Kolom C: HPP
+            columnMapping.stokBox = 3; // Kolom D: Stok Box
+            columnMapping.rasio1 = 4; // Kolom E: Rasio 1
+            columnMapping.stokStrip = 5; // Kolom F: Stok Strip
+            columnMapping.rasio2 = 6; // Kolom G: Rasio 2
+            columnMapping.stokTablet = 7; // Kolom H: Stok Tablet
+            columnMapping.rasio3 = 8; // Kolom I: Rasio 3
+            columnMapping.stokBotol = 9; // Kolom J: Stok Botol
+            columnMapping.rasio4 = 10; // Kolom K: Rasio 4
+            columnMapping.stokTube = 11; // Kolom L: Stok Tube
+            columnMapping.rasio5 = 12; // Kolom M: Rasio 5
+            columnMapping.stokPcs = 13; // Kolom N: Stok Pcs
+            columnMapping.rasio6 = 14; // Kolom O: Rasio 6
+            columnMapping.stokPack = 15; // Kolom P: Stok pack
+            columnMapping.rasio7 = 16; // Kolom Q: Rasio 7
+            columnMapping.expired = 17; // Kolom R: Expired Date
+            
+            console.log('Column mapping:', columnMapping);
+        }
+
+        // Tampilkan preview data
+        function showPreview() {
+            if (!uploadedFileData || !uploadedFileData.data) {
+                alert('Belum ada data file yang diupload');
+                return;
+            }
+            
+            console.log('Menampilkan preview data');
+            
+            previewModal.style.display = 'flex';
+            previewContent.innerHTML = '<div class="loading"><div class="spinner"></div><p>Memuat preview data...</p></div>';
+            
+            // Beri sedikit delay untuk efek loading
+            setTimeout(() => {
+                renderPreviewTable();
+            }, 500);
+        }
+
+        // Render tabel preview
+        function renderPreviewTable() {
+            const data = uploadedFileData.data;
+            let html = '';
+            
+            // Tampilkan maksimal 15 baris
+            const rowLimit = Math.min(15, data.length);
+            
+            if (rowLimit === 0) {
+                html = '<p>Tidak ada data yang dapat ditampilkan</p>';
+            } else {
+                html = '<table class="preview-table">';
+                
+                // Header tabel
+                html += '<thead><tr>';
+                for (let i = 0; i < data[0].length && i < 10; i++) {
+                    const headerText = data[0][i] || `Kolom ${String.fromCharCode(65 + i)}`;
+                    html += `<th>${headerText}</th>`;
+                }
+                html += '</tr></thead>';
+                
+                // Data rows
+                html += '<tbody>';
+                for (let i = 1; i < rowLimit; i++) {
+                    html += '<tr>';
+                    for (let j = 0; j < data[i].length && j < 10; j++) {
+                        const cellValue = data[i][j] !== undefined && data[i][j] !== null ? data[i][j] : '';
+                        html += `<td>${cellValue}</td>`;
+                    }
+                    html += '</tr>';
+                }
+                html += '</tbody></table>';
+                
+                html += `<p style="margin-top: 10px; font-size: 0.9rem; color: #7f8c8d;">Menampilkan ${rowLimit - 1} dari ${data.length - 1} baris data</p>`;
+            }
+            
+            previewContent.innerHTML = html;
+        }
+
+        // Tutup preview modal
+        function closePreview() {
+            previewModal.style.display = 'none';
+        }
+
+        // Tutup export modal
+        function closeExportModalFunc() {
+            exportModal.style.display = 'none';
+        }
+
+        // Load data dari Excel ke aplikasi
+        function loadExcelData() {
+            if (!uploadedFileData || !uploadedFileData.data) {
+                alert('Belum ada data file yang diupload');
+                return;
+            }
+            
+            console.log('Memuat data Excel ke aplikasi');
+            
+            const data = uploadedFileData.data;
+            products = [];
+            
+            // Mulai dari baris ke-4 (indeks 3) karena baris 1-3 adalah header
+            for (let i = 3; i < data.length; i++) {
+                const row = data[i];
+                
+                // Skip baris kosong
+                if (!row || row.length === 0) continue;
+                
+                // Ambil data berdasarkan mapping kolom
+                const no = row[columnMapping.no] !== undefined ? String(row[columnMapping.no]).trim() : '';
+                const name = row[columnMapping.name] !== undefined ? String(row[columnMapping.name]).trim() : '';
+                
+                // Hanya tambahkan jika ada nomor dan nama
+                if (no && name) {
+                    products.push({
+                        no: no,
+                        name: name,
+                        rowIndex: i
+                    });
+                }
+            }
+            
+            console.log('Data produk dimuat:', products.length, 'produk');
+            
+            // Update UI
+            updateUIAfterDataLoad();
+            
+            alert(`Data berhasil dimuat: ${products.length} produk ditemukan`);
+        }
+
+        // Load data dari localStorage
+        function loadDataFromLocalStorage() {
+            // Buat produk dari data yang ada
+            products = inputData.map(item => ({
+                no: item.no,
+                name: item.name
+            }));
+            
+            updateUIAfterDataLoad();
+        }
+
+        // Update UI setelah data dimuat
+        function updateUIAfterDataLoad() {
+            // Tampilkan bagian aplikasi
+            appInfo.style.display = 'flex';
+            mainContent.style.display = 'flex';
+            statusBar.style.display = 'flex';
+            
+            // Update info
+            totalProductsElement.textContent = `${products.length} produk`;
+            fileFormatElement.textContent = uploadedFileData ? uploadedFileData.name : 'Data dari localStorage';
+            
+            // Render daftar produk
+            renderProductList(products);
+            
+            // Update status input
+            updateInputStatus();
+        }
+
+        // Render daftar produk
+        function renderProductList(productsToRender) {
+            if (!productsToRender || productsToRender.length === 0) {
+                productListElement.innerHTML = '<div class="no-data">Tidak ada produk yang dapat ditampilkan</div>';
+                return;
+            }
+            
+            let html = '';
+            productsToRender.forEach(product => {
+                // Cek apakah produk sudah diinput
+                const isInput = inputData.some(item => item.no === product.no);
+                
+                html += `
+                    <div class="product-item ${selectedProduct && selectedProduct.no === product.no ? 'selected' : ''}" data-no="${product.no}">
+                        <div class="product-name">${product.no}. ${product.name}</div>
+                        <div class="product-details">
+                            ${isInput ? '<span style="color:#27ae60;">✓ Data sudah diinput</span>' : '<span style="color:#e74c3c;">Data belum diinput</span>'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            productListElement.innerHTML = html;
+            
+            // Tambahkan event listener untuk setiap item produk
+            document.querySelectorAll('.product-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const productNo = this.getAttribute('data-no');
+                    selectProduct(productNo);
+                });
+            });
+        }
+
+        // Pilih produk dari daftar
+        function selectProduct(productNo) {
+            // Cari produk berdasarkan nomor
+            selectedProduct = products.find(p => p.no === productNo);
+            
+            if (!selectedProduct) return;
+            
+            // Update form dengan data produk
+            productNoInput.value = selectedProduct.no;
+            productNameInput.value = selectedProduct.name;
+            
+            // Cek apakah produk sudah pernah diinput
+            const existingData = inputData.find(item => item.no === selectedProduct.no);
+            
+            if (existingData) {
+                // Jika sudah ada data, isi form dengan data yang ada
+                hppInput.value = existingData.hpp || '';
+                stokBoxInput.value = existingData.stokBox || '';
+                rasio1Input.value = existingData.rasio1 || '';
+                stokStripInput.value = existingData.stokStrip || '';
+                rasio2Input.value = existingData.rasio2 || '';
+                stokTabletInput.value = existingData.stokTablet || '';
+                rasio3Input.value = existingData.rasio3 || '';
+                stokBotolInput.value = existingData.stokBotol || '';
+                rasio4Input.value = existingData.rasio4 || '';
+                stokTubeInput.value = existingData.stokTube || '';
+                rasio5Input.value = existingData.rasio5 || '';
+                stokPcsInput.value = existingData.stokPcs || '';
+                rasio6Input.value = existingData.rasio6 || '';
+                stokPackInput.value = existingData.stokPack || '';
+                rasio7Input.value = existingData.rasio7 || '';
+                expiredDateInput.value = existingData.expiredDate || '';
+                
+                statusMessageElement.textContent = `Produk "${selectedProduct.name}" sudah memiliki data. Anda dapat mengubahnya.`;
+                saveButton.textContent = 'Update Data';
+            } else {
+                // Jika belum ada data, kosongkan form
+                resetForm();
+                statusMessageElement.textContent = `Menginput data untuk produk "${selectedProduct.name}"`;
+                saveButton.textContent = 'Simpan Data';
+            }
+            
+            // Update tampilan daftar produk
+            document.querySelectorAll('.product-item').forEach(item => {
+                item.classList.remove('selected');
+                if (item.getAttribute('data-no') === productNo) {
+                    item.classList.add('selected');
+                }
+            });
+            
+            // Fokus ke input HPP
+            hppInput.focus();
+        }
+
+        // Reset form
+        function resetForm() {
+            hppInput.value = '';
+            stokBoxInput.value = '';
+            rasio1Input.value = '';
+            stokStripInput.value = '';
+            rasio2Input.value = '';
+            stokTabletInput.value = '';
+            rasio3Input.value = '';
+            stokBotolInput.value = '';
+            rasio4Input.value = '';
+            stokTubeInput.value = '';
+            rasio5Input.value = '';
+            stokPcsInput.value = '';
+            rasio6Input.value = '';
+            stokPackInput.value = '';
+            rasio7Input.value = '';
+            
+            // Set tanggal default untuk expired date (6 bulan dari sekarang)
+            const sixMonthsFromNow = new Date();
+            sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+            expiredDateInput.valueAsDate = sixMonthsFromNow;
+        }
+
+        // Simpan data
+        function saveData() {
+            if (!selectedProduct) {
+                alert('Pilih produk terlebih dahulu dari daftar');
+                return;
+            }
+            
+            // Validasi input HPP (harus diisi)
+            if (!hppInput.value.trim()) {
+                alert('Harap isi Harga Pokok Penjualan (HPP)');
+                hppInput.focus();
+                return;
+            }
+            
+            // Buat objek data
+            const data = {
+                no: selectedProduct.no,
+                name: selectedProduct.name,
+                hpp: hppInput.value,
+                stokBox: stokBoxInput.value || '0',
+                rasio1: rasio1Input.value || '0',
+                stokStrip: stokStripInput.value || '0',
+                rasio2: rasio2Input.value || '0',
+                stokTablet: stokTabletInput.value || '0',
+                rasio3: rasio3Input.value || '0',
+                stokBotol: stokBotolInput.value || '0',
+                rasio4: rasio4Input.value || '0',
+                stokTube: stokTubeInput.value || '0',
+                rasio5: rasio5Input.value || '0',
+                stokPcs: stokPcsInput.value || '0',
+                rasio6: rasio6Input.value || '0',
+                stokPack: stokPackInput.value || '0',
+                rasio7: rasio7Input.value || '0',
+                expiredDate: expiredDateInput.value,
+                lastUpdated: new Date().toISOString()
+            };
+            
+            // Cek apakah data sudah ada
+            const existingIndex = inputData.findIndex(item => item.no === selectedProduct.no);
+            
+            if (existingIndex !== -1) {
+                // Update data yang sudah ada
+                inputData[existingIndex] = data;
+                statusMessageElement.textContent = `Data untuk "${selectedProduct.name}" berhasil diperbarui`;
+            } else {
+                // Tambah data baru
+                inputData.push(data);
+                statusMessageElement.textContent = `Data untuk "${selectedProduct.name}" berhasil disimpan`;
+            }
+            
+            // Simpan ke localStorage
+            localStorage.setItem('apotekInputData', JSON.stringify(inputData));
+            
+            // Update status
+            updateInputStatus();
+            
+            // Refresh daftar produk
+            renderProductList(products);
+            
+            // Tampilkan pesan sukses
+            alert('Data berhasil disimpan!');
+        }
+
+        // Update status input
+        function updateInputStatus() {
+            const inputCount = inputData.length;
+            const totalCount = products.length;
+            const percentage = totalCount > 0 ? Math.round((inputCount / totalCount) * 100) : 0;
+            
+            inputStatusElement.textContent = `${inputCount} dari ${totalCount} produk (${percentage}%)`;
+            itemCountElement.textContent = `${inputCount}/${totalCount}`;
+            
+            if (inputCount === 0) {
+                inputStatusElement.textContent = 'Belum ada data diinput';
+            }
+        }
+
+        // Tampilkan modal export
+        function showExportModal() {
+            if (inputData.length === 0) {
+                alert('Belum ada data yang dapat diexport');
+                return;
+            }
+            
+            exportModal.style.display = 'flex';
+        }
+
+        // Export data
+        function exportData() {
+            if (inputData.length === 0) {
+                alert('Belum ada data yang dapat diexport');
+                return;
+            }
+            
+            const format = document.querySelector('input[name="export-format"]:checked').value;
+            
+            let dataStr, filename, mimeType;
+            
+            if (format === 'csv') {
+                // Buat header CSV sesuai dengan format file asli
+                const headers = [
+                    'No.', 'Nama Persediaan', 'HPP', 'Stok Box', 'Rasio 1', 
+                    'Stok Strip', 'Rasio 2', 'Stok Tablet', 'Rasio 3', 
+                    'Stok Botol', 'Rasio 4', 'Stok Tube', 'Rasio 5', 
+                    'Stok Pcs', 'Rasio 6', 'Stok Pack', 'Rasio 7', 'Expired Date'
+                ];
+                
+                // Buat baris data
+                const rows = inputData.map(item => [
+                    item.no,
+                    `"${item.name}"`,
+                    item.hpp,
+                    item.stokBox,
+                    item.rasio1,
+                    item.stokStrip,
+                    item.rasio2,
+                    item.stokTablet,
+                    item.rasio3,
+                    item.stokBotol,
+                    item.rasio4,
+                    item.stokTube,
+                    item.rasio5,
+                    item.stokPcs,
+                    item.rasio6,
+                    item.stokPack,
+                    item.rasio7,
+                    item.expiredDate
+                ]);
+                
+                // Gabungkan header dan data
+                const csvContent = [
+                    headers.join(','),
+                    ...rows.map(row => row.join(','))
+                ].join('\n');
+                
+                dataStr = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
+                filename = `data_persediaan_apotek_${new Date().toISOString().split('T')[0]}.csv`;
+                
+            } else if (format === 'json') {
+                dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(inputData, null, 2));
+                filename = `data_persediaan_apotek_${new Date().toISOString().split('T')[0]}.json`;
+                
+            } else if (format === 'excel') {
+                // Untuk Excel, kita perlu membuat workbook
+                try {
+                    // Buat worksheet dari data
+                    const wsData = [
+                        // Header
+                        ['No.', 'Nama Persediaan', 'HPP', 'Stok Box', 'Rasio 1', 
+                         'Stok Strip', 'Rasio 2', 'Stok Tablet', 'Rasio 3', 
+                         'Stok Botol', 'Rasio 4', 'Stok Tube', 'Rasio 5', 
+                         'Stok Pcs', 'Rasio 6', 'Stok Pack', 'Rasio 7', 'Expired Date'],
+                        // Data
+                        ...inputData.map(item => [
+                            item.no,
+                            item.name,
+                            item.hpp,
+                            item.stokBox,
+                            item.rasio1,
+                            item.stokStrip,
+                            item.rasio2,
+                            item.stokTablet,
+                            item.rasio3,
+                            item.stokBotol,
+                            item.rasio4,
+                            item.stokTube,
+                            item.rasio5,
+                            item.stokPcs,
+                            item.rasio6,
+                            item.stokPack,
+                            item.rasio7,
+                            item.expiredDate
+                        ])
+                    ];
+                    
+                    const ws = XLSX.utils.aoa_to_sheet(wsData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Data Persediaan");
+                    
+                    // Generate file
+                    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+                    
+                    // Konversi ke blob
+                    function s2ab(s) {
+                        const buf = new ArrayBuffer(s.length);
+                        const view = new Uint8Array(buf);
+                        for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+                        return buf;
+                    }
+                    
+                    const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
+                    const url = URL.createObjectURL(blob);
+                    
+                    // Buat link download
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = url;
+                    downloadLink.download = `data_persediaan_apotek_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                    
+                    // Cleanup
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                    
+                    // Tampilkan pesan
+                    alert(`Data berhasil diexport dalam format Excel`);
+                    exportModal.style.display = 'none';
+                    return;
+                    
+                } catch (error) {
+                    console.error('Error creating Excel file:', error);
+                    alert('Error membuat file Excel. Export sebagai CSV sebagai alternatif.');
+                    
+                    // Fallback ke CSV
+                    const headers = [
+                        'No.', 'Nama Persediaan', 'HPP', 'Stok Box', 'Rasio 1', 
+                        'Stok Strip', 'Rasio 2', 'Stok Tablet', 'Rasio 3', 
+                        'Stok Botol', 'Rasio 4', 'Stok Tube', 'Rasio 5', 
+                        'Stok Pcs', 'Rasio 6', 'Stok Pack', 'Rasio 7', 'Expired Date'
+                    ];
+                    
+                    const rows = inputData.map(item => [
+                        item.no,
+                        `"${item.name}"`,
+                        item.hpp,
+                        item.stokBox,
+                        item.rasio1,
+                        item.stokStrip,
+                        item.rasio2,
+                        item.stokTablet,
+                        item.rasio3,
+                        item.stokBotol,
+                        item.rasio4,
+                        item.stokTube,
+                        item.rasio5,
+                        item.stokPcs,
+                        item.rasio6,
+                        item.stokPack,
+                        item.rasio7,
+                        item.expiredDate
+                    ]);
+                    
+                    const csvContent = [
+                        headers.join(','),
+                        ...rows.map(row => row.join(','))
+                    ].join('\n');
+                    
+                    dataStr = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
+                    filename = `data_persediaan_apotek_${new Date().toISOString().split('T')[0]}.csv`;
+                }
+            }
+            
+            // Buat link download untuk CSV dan JSON
+            const downloadLink = document.createElement('a');
+            downloadLink.href = dataStr;
+            downloadLink.download = filename;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            
+            // Tampilkan pesan
+            alert(`Data berhasil diexport dalam format ${format.toUpperCase()}`);
+            exportModal.style.display = 'none';
+        }
+
+        // Inisialisasi aplikasi saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
